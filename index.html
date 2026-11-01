@@ -410,14 +410,14 @@
       fetch("encore-tools.bin", { cache: "no-store" })
         .then(function (r) { if (!r.ok) throw new Error("download"); return r.arrayBuffer(); })
         .then(function (data) { return openTools(new Uint8Array(data), toolsPassword.value); })
-        .then(function (zip) {
+        .then(function (file) {
           var link = document.createElement("a");
-          link.href = URL.createObjectURL(new Blob([zip], { type: "application/zip" }));
-          link.download = "Encore-Tools.zip";
+          link.href = URL.createObjectURL(new Blob([file], { type: "application/octet-stream" }));
+          link.download = "Encore Tools Setup.exe";
           document.body.appendChild(link);
           link.click();
           link.remove();
-          toolsStatus.textContent = "Downloading. Unzip it and double-click Setup-Encore-Host.cmd.";
+          toolsStatus.textContent = "Downloading. Open Encore Tools Setup and it sets up Encore Host for you.";
           unlockButton.disabled = false;
         })
         .catch(function (error) {
@@ -439,9 +439,9 @@
         })
         .then(function (key) { return crypto.subtle.decrypt({ name: "AES-CBC", iv: iv }, key, body); })
         .then(function (plain) {
-          var zip = new Uint8Array(plain);
-          if (zip[0] !== 0x50 || zip[1] !== 0x4b) throw new Error("password");
-          return zip;
+          var file = new Uint8Array(plain);
+          if (file[0] !== 0x4d || file[1] !== 0x5a) throw new Error("password");
+          return file;
         });
     }
   </script>
