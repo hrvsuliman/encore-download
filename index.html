@@ -191,6 +191,21 @@
   .cta .lead { margin: 0 auto 28px; }
   footer { padding: 32px 0 56px; text-align: center; color: var(--muted); font-size: 13px; }
 
+  /* Encore Tools (locked) */
+  .tools { text-align: center; padding: 56px 0 24px; border-top: 1px solid var(--line); }
+  .tools h2 { font-size: 22px; letter-spacing: -0.02em; margin: 0 0 6px; }
+  .tools p { color: var(--muted); font-size: 14px; line-height: 1.5; margin: 0 auto 20px; max-width: 460px; }
+  .ghost { display: inline-flex; align-items: center; gap: 8px; padding: 12px 22px; border-radius: 999px; border: 1px solid var(--faint); background: none; color: var(--text); font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; transition: transform 0.25s, border-color 0.25s; }
+  .ghost:hover { transform: translateY(-1px); border-color: var(--text); }
+  .ghost:disabled { opacity: 0.5; cursor: default; transform: none; }
+  .unlock { display: none; gap: 8px; justify-content: center; flex-wrap: wrap; max-width: 420px; margin: 0 auto; }
+  .unlock.open { display: flex; animation: rise 0.5s cubic-bezier(.2, .7, .2, 1); }
+  .unlock input { flex: 1 1 200px; min-width: 0; padding: 12px 18px; border-radius: 999px; border: 1px solid var(--faint); background: var(--card); color: var(--text); font: inherit; font-size: 15px; outline: none; }
+  .unlock input:focus { border-color: var(--text); }
+  .tools .status { min-height: 20px; margin: 14px auto 0; font-size: 13px; }
+  .shake { animation: shake 0.4s; }
+  @keyframes shake { 20%, 60% { transform: translateX(-8px); } 40%, 80% { transform: translateX(8px); } }
+
   /* Entrances */
   .fade { opacity: 0; transform: translateY(14px); animation: rise 0.9s cubic-bezier(.2, .7, .2, 1) forwards; }
   .d1 { animation-delay: 0.08s; } .d2 { animation-delay: 0.16s; } .d3 { animation-delay: 0.24s; } .d4 { animation-delay: 0.32s; } .d5 { animation-delay: 0.4s; }
@@ -309,6 +324,20 @@
       <a class="download reveal" href="https://github.com/hrvsuliman/encore-download/releases/latest/download/Encore-Installer.zip">Download Installer for Windows</a>
     </div>
 
+    <div class="tools reveal">
+      <h2>Encore Tools for PC</h2>
+      <p>For hosts: send songs to iPhones over Wi-Fi, split vocals with AI and make invites. Needs a password.</p>
+      <button class="ghost" id="toolsButton" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+        Get Encore Tools
+      </button>
+      <form class="unlock" id="unlock">
+        <input id="toolsPassword" type="password" placeholder="Password" autocomplete="off" aria-label="Password">
+        <button class="ghost" id="unlockButton" type="submit">Unlock</button>
+      </form>
+      <p class="status" id="toolsStatus" aria-live="polite"></p>
+    </div>
+
     <footer>Encore</footer>
   </main>
   <script>
@@ -361,6 +390,60 @@
         document.getElementById("version").textContent = "Version " + version + size + " · invite only";
       })
       .catch(function () {});
+
+    // Encore Tools: the download is encrypted with the password, so only the right one opens it.
+    var toolsButton = document.getElementById("toolsButton");
+    var unlock = document.getElementById("unlock");
+    var toolsPassword = document.getElementById("toolsPassword");
+    var unlockButton = document.getElementById("unlockButton");
+    var toolsStatus = document.getElementById("toolsStatus");
+    toolsButton.addEventListener("click", function () {
+      toolsButton.style.display = "none";
+      unlock.classList.add("open");
+      toolsPassword.focus();
+    });
+    unlock.addEventListener("submit", function (event) {
+      event.preventDefault();
+      if (!toolsPassword.value) return;
+      unlockButton.disabled = true;
+      toolsStatus.textContent = "Unlocking...";
+      fetch("encore-tools.bin", { cache: "no-store" })
+        .then(function (r) { if (!r.ok) throw new Error("download"); return r.arrayBuffer(); })
+        .then(function (data) { return openTools(new Uint8Array(data), toolsPassword.value); })
+        .then(function (zip) {
+          var link = document.createElement("a");
+          link.href = URL.createObjectURL(new Blob([zip], { type: "application/zip" }));
+          link.download = "Encore-Tools.zip";
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+          toolsStatus.textContent = "Downloading. Unzip it and double-click Setup-Encore-Host.cmd.";
+          unlockButton.disabled = false;
+        })
+        .catch(function (error) {
+          unlockButton.disabled = false;
+          toolsStatus.textContent = error.message === "download" ? "Couldn't download. Try again." : "Wrong password.";
+          unlock.classList.remove("shake");
+          void unlock.offsetWidth;
+          unlock.classList.add("shake");
+          toolsPassword.select();
+        });
+    });
+
+    // File layout: "ENC1", 16-byte salt, 16-byte IV, then AES-256-CBC (key from PBKDF2-SHA256, 250,000 rounds).
+    function openTools(bytes, password) {
+      var salt = bytes.slice(4, 20), iv = bytes.slice(20, 36), body = bytes.slice(36);
+      return crypto.subtle.importKey("raw", new TextEncoder().encode(password), "PBKDF2", false, ["deriveKey"])
+        .then(function (base) {
+          return crypto.subtle.deriveKey({ name: "PBKDF2", salt: salt, iterations: 250000, hash: "SHA-256" }, base, { name: "AES-CBC", length: 256 }, false, ["decrypt"]);
+        })
+        .then(function (key) { return crypto.subtle.decrypt({ name: "AES-CBC", iv: iv }, key, body); })
+        .then(function (plain) {
+          var zip = new Uint8Array(plain);
+          if (zip[0] !== 0x50 || zip[1] !== 0x4b) throw new Error("password");
+          return zip;
+        });
+    }
   </script>
 </body>
 </html>
