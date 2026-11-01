@@ -14,7 +14,9 @@
     --bg: #000;
     --text: #fff;
     --muted: #8e8e93;
+    --faint: rgba(255, 255, 255, 0.28);
     --line: rgba(255, 255, 255, 0.12);
+    --card: rgba(255, 255, 255, 0.04);
     --button: #fff;
     --button-text: #000;
     --glow: rgba(255, 255, 255, 0.14);
@@ -24,14 +26,17 @@
       --bg: #fff;
       --text: #000;
       --muted: #6e6e73;
+      --faint: rgba(0, 0, 0, 0.22);
       --line: rgba(0, 0, 0, 0.1);
+      --card: rgba(0, 0, 0, 0.025);
       --button: #000;
       --button-text: #fff;
-      --glow: rgba(0, 0, 0, 0.08);
+      --glow: rgba(0, 0, 0, 0.07);
     }
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; }
+  html { scroll-behavior: smooth; }
   body {
     min-height: 100vh;
     background: var(--bg);
@@ -40,97 +45,169 @@
     -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
   }
-  main {
-    max-width: 640px;
-    margin: 0 auto;
-    padding: 0 16px;
-  }
+  main { max-width: 960px; margin: 0 auto; padding: 0 16px; }
+  .narrow { max-width: 640px; margin: 0 auto; }
 
-  /* Hero */
+  /* ---------- Hero ---------- */
   .hero {
-    min-height: 88vh;
+    min-height: 92vh;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    text-align: center;
-    position: relative;
+    text-align: center; position: relative;
   }
   .hero::before {
-    content: "";
-    position: absolute; top: 18%; left: 50%;
-    width: 420px; height: 420px; max-width: 100vw;
+    content: ""; position: absolute; top: 12%; left: 50%;
+    width: 520px; height: 520px; max-width: 120vw;
     transform: translateX(-50%);
     background: radial-gradient(circle, var(--glow), transparent 65%);
+    animation: breathe 6s ease-in-out infinite;
     pointer-events: none;
   }
-  .icon {
-    width: 120px; height: 120px; border-radius: 27px;
-    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
-    position: relative;
-  }
-  h1 {
-    font-size: clamp(56px, 14vw, 96px);
-    font-weight: 700;
-    letter-spacing: -0.045em;
-    line-height: 1;
-    margin: 28px 0 12px;
-  }
-  .tagline {
-    color: var(--muted);
-    font-size: clamp(18px, 4.5vw, 22px);
-    margin: 0 0 36px;
-    letter-spacing: -0.01em;
-  }
+  @keyframes breathe { 50% { opacity: 0.55; transform: translateX(-50%) scale(1.08); } }
+  .icon { width: 120px; height: 120px; border-radius: 27px; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35); position: relative; animation: float 7s ease-in-out infinite; }
+  @keyframes float { 50% { transform: translateY(-8px); } }
+  h1 { font-size: clamp(56px, 14vw, 104px); font-weight: 700; letter-spacing: -0.045em; line-height: 1; margin: 28px 0 12px; }
+  .tagline { color: var(--muted); font-size: clamp(18px, 4.5vw, 22px); margin: 0 0 26px; letter-spacing: -0.01em; }
+
+  /* A live waveform under the title */
+  .wave { display: flex; align-items: center; justify-content: center; gap: 4px; height: 44px; margin-bottom: 30px; }
+  .wave i { display: block; width: 4px; border-radius: 2px; background: var(--text); height: 10px; animation: bounce 1.2s ease-in-out infinite; }
+  @keyframes bounce { 0%, 100% { height: 8px; opacity: 0.35; } 50% { height: var(--h); opacity: 1; } }
+
   .download {
     display: inline-flex; align-items: center; gap: 10px;
-    padding: 16px 34px;
-    border-radius: 999px;
+    padding: 16px 34px; border-radius: 999px;
     background: var(--button); color: var(--button-text);
     text-decoration: none; font-weight: 600; font-size: 17px;
-    transition: transform 0.2s ease, opacity 0.2s ease;
+    transition: transform 0.25s cubic-bezier(.2, .8, .2, 1), box-shadow 0.25s ease;
   }
-  .download:hover { transform: scale(1.03); }
-  .download:active { transform: scale(0.97); opacity: 0.85; }
-  .meta { color: var(--muted); font-size: 13px; margin-top: 14px; letter-spacing: 0.01em; }
-  .scroll {
-    position: absolute; bottom: 28px;
-    color: var(--muted); font-size: 13px; text-decoration: none;
-  }
+  .download:hover { transform: translateY(-2px) scale(1.03); box-shadow: 0 12px 40px var(--glow); }
+  .download:active { transform: scale(0.97); }
+  .meta { color: var(--muted); font-size: 13px; margin-top: 14px; }
+  .scroll { position: absolute; bottom: 26px; color: var(--muted); font-size: 13px; text-decoration: none; animation: nudge 2.4s ease-in-out infinite; }
+  @keyframes nudge { 50% { transform: translateY(5px); } }
 
-  /* Features */
-  section { padding: 56px 0; border-top: 1px solid var(--line); }
-  h2 {
-    font-size: 13px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
-    color: var(--muted); margin: 0 0 28px;
+  /* ---------- Sections ---------- */
+  section { padding: 72px 0; border-top: 1px solid var(--line); }
+  h2 { font-size: 13px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin: 0 0 14px; }
+  .lead { font-size: clamp(28px, 6vw, 44px); font-weight: 700; letter-spacing: -0.03em; line-height: 1.1; margin: 0 0 40px; max-width: 640px; }
+
+  /* Phone showing the player */
+  .showcase { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
+  .phone {
+    width: 270px; height: 560px; margin: 0 auto;
+    border-radius: 46px; border: 1.5px solid var(--faint);
+    padding: 14px; position: relative;
+    background: var(--card);
+    box-shadow: 0 40px 100px var(--glow);
   }
-  .features { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px 24px; }
-  .feature b { display: block; font-size: 19px; font-weight: 600; letter-spacing: -0.01em; margin-bottom: 4px; }
-  .feature span { color: var(--muted); font-size: 15px; line-height: 1.45; }
+  .phone::before { content: ""; position: absolute; top: 14px; left: 50%; width: 84px; height: 24px; border-radius: 14px; background: var(--text); transform: translateX(-50%); opacity: 0.9; }
+  .screen { height: 100%; border-radius: 34px; overflow: hidden; display: flex; flex-direction: column; align-items: center; padding: 56px 20px 22px; gap: 14px; border: 1px solid var(--line); }
+  .cover { width: 180px; height: 180px; border-radius: 20px; animation: pulse 2.4s ease-in-out infinite; }
+  @keyframes pulse { 50% { transform: scale(1.035); } }
+  .song { text-align: center; }
+  .song b { display: block; font-size: 18px; }
+  .song span { color: var(--muted); font-size: 13px; }
+  .bar { width: 100%; height: 4px; border-radius: 2px; background: var(--line); overflow: hidden; }
+  .bar i { display: block; height: 100%; width: 0; background: var(--text); animation: progress 12s linear infinite; }
+  @keyframes progress { to { width: 100%; } }
+  .lyrics { width: 100%; height: 84px; overflow: hidden; position: relative; text-align: center; font-weight: 700; font-size: 15px; }
+  .lyrics div { animation: scroll-lyrics 12s steps(1) infinite; }
+  .lyrics p { margin: 0; height: 28px; line-height: 28px; color: var(--faint); transition: color 0.3s; }
+  @keyframes scroll-lyrics {
+    0% { transform: translateY(28px); } 25% { transform: translateY(0); } 50% { transform: translateY(-28px); } 75% { transform: translateY(-56px); }
+  }
+  .lyrics p:nth-child(1) { animation: lit 12s infinite; }
+  .lyrics p:nth-child(2) { animation: lit 12s infinite 3s; }
+  .lyrics p:nth-child(3) { animation: lit 12s infinite 6s; }
+  .lyrics p:nth-child(4) { animation: lit 12s infinite 9s; }
+  @keyframes lit { 0%, 24% { color: var(--text); } 25%, 100% { color: var(--faint); } }
+  .controls { display: flex; gap: 34px; align-items: center; margin-top: auto; }
+  .controls svg { fill: var(--text); }
+
+  .points { display: grid; gap: 22px; }
+  .point b { display: block; font-size: 20px; letter-spacing: -0.01em; margin-bottom: 4px; }
+  .point span { color: var(--muted); font-size: 15px; line-height: 1.5; }
+
+  /* Feature cards with little moving drawings */
+  .features { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+  .card {
+    border: 1px solid var(--line); border-radius: 22px; padding: 22px; background: var(--card);
+    transition: transform 0.35s cubic-bezier(.2, .8, .2, 1), border-color 0.35s;
+  }
+  .card:hover { transform: translateY(-4px); border-color: var(--faint); }
+  .art { height: 70px; margin-bottom: 18px; display: flex; align-items: flex-end; gap: 5px; }
+  .card b { display: block; font-size: 18px; margin-bottom: 4px; }
+  .card span { color: var(--muted); font-size: 14px; line-height: 1.45; }
+
+  .eq i { flex: 1; border-radius: 3px; background: var(--text); animation: eq 1.4s ease-in-out infinite; }
+  @keyframes eq { 0%, 100% { height: 18%; } 50% { height: var(--h); } }
+
+  .split { position: relative; align-items: center; }
+  .split svg { width: 100%; height: 70px; overflow: visible; }
+  .split path { fill: none; stroke: var(--text); stroke-width: 2; stroke-linecap: round; }
+  .split .a { animation: drift-up 3s ease-in-out infinite; }
+  .split .b { opacity: 0.4; animation: drift-down 3s ease-in-out infinite; }
+  @keyframes drift-up { 50% { transform: translateY(-9px); } }
+  @keyframes drift-down { 50% { transform: translateY(9px); } }
+
+  .lines { flex-direction: column; align-items: stretch; justify-content: center; gap: 8px; }
+  .lines i { height: 7px; border-radius: 4px; background: var(--faint); animation: line 3s infinite; }
+  .lines i:nth-child(1) { width: 80%; } .lines i:nth-child(2) { width: 65%; animation-delay: 1s; } .lines i:nth-child(3) { width: 72%; animation-delay: 2s; }
+  @keyframes line { 0%, 30% { background: var(--text); } 33%, 100% { background: var(--faint); } }
+
+  .merge { align-items: center; justify-content: center; }
+  .merge span { width: 52px; height: 52px; border-radius: 50%; border: 2px solid var(--text); display: block; }
+  .merge span:first-child { animation: in-left 3s ease-in-out infinite; }
+  .merge span:last-child { animation: in-right 3s ease-in-out infinite; opacity: 0.55; }
+  @keyframes in-left { 50% { transform: translateX(16px); } }
+  @keyframes in-right { 50% { transform: translateX(-16px); } }
+
+  .mood { align-items: center; justify-content: center; gap: 10px; }
+  .mood span { width: 22px; height: 22px; border-radius: 50%; background: var(--text); animation: pop 2.4s ease-in-out infinite; }
+  .mood span:nth-child(2) { animation-delay: 0.3s; opacity: 0.75; } .mood span:nth-child(3) { animation-delay: 0.6s; opacity: 0.5; } .mood span:nth-child(4) { animation-delay: 0.9s; opacity: 0.3; }
+  @keyframes pop { 50% { transform: translateY(-14px) scale(1.15); } }
+
+  .tiles { display: grid !important; grid-template-columns: repeat(3, 1fr); grid-template-rows: 1fr 1fr; gap: 6px; }
+  .tiles span { border-radius: 8px; border: 1.5px solid var(--faint); animation: tile 4s infinite; }
+  .tiles span:nth-child(2) { animation-delay: 0.6s; } .tiles span:nth-child(3) { animation-delay: 1.2s; }
+  .tiles span:nth-child(4) { animation-delay: 1.8s; } .tiles span:nth-child(5) { animation-delay: 2.4s; } .tiles span:nth-child(6) { animation-delay: 3s; }
+  @keyframes tile { 0%, 20% { background: var(--text); border-color: var(--text); } 25%, 100% { background: transparent; } }
+
+  /* Numbers */
+  .numbers { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; text-align: center; }
+  .numbers b { display: block; font-size: clamp(36px, 8vw, 56px); font-weight: 700; letter-spacing: -0.04em; }
+  .numbers span { color: var(--muted); font-size: 14px; }
 
   /* Install */
   ol { list-style: none; counter-reset: step; margin: 0; padding: 0; }
-  li { counter-increment: step; display: flex; gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--line); font-size: 16px; line-height: 1.5; }
+  li { counter-increment: step; display: flex; gap: 16px; padding: 16px 0; border-bottom: 1px solid var(--line); font-size: 16px; line-height: 1.5; }
   li:last-child { border-bottom: none; }
-  li::before {
-    content: counter(step);
-    flex: none;
-    width: 28px; height: 28px; border-radius: 50%;
-    border: 1px solid var(--text);
-    display: grid; place-items: center;
-    font-size: 13px; font-weight: 600;
-  }
+  li::before { content: counter(step); flex: none; width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--text); display: grid; place-items: center; font-size: 13px; font-weight: 600; }
   li a { color: var(--text); }
   .note { color: var(--muted); font-size: 14px; line-height: 1.5; margin: 20px 0 0; }
+  .cta { text-align: center; padding: 80px 0; border-top: 1px solid var(--line); }
+  .cta .lead { margin: 0 auto 28px; }
+  footer { padding: 32px 0 56px; text-align: center; color: var(--muted); font-size: 13px; }
 
-  footer { padding: 40px 0 56px; text-align: center; color: var(--muted); font-size: 13px; border-top: 1px solid var(--line); }
-
-  /* Gentle entrance */
+  /* Entrances */
   .fade { opacity: 0; transform: translateY(14px); animation: rise 0.9s cubic-bezier(.2, .7, .2, 1) forwards; }
-  .d1 { animation-delay: 0.08s; } .d2 { animation-delay: 0.16s; } .d3 { animation-delay: 0.24s; } .d4 { animation-delay: 0.32s; }
+  .d1 { animation-delay: 0.08s; } .d2 { animation-delay: 0.16s; } .d3 { animation-delay: 0.24s; } .d4 { animation-delay: 0.32s; } .d5 { animation-delay: 0.4s; }
   @keyframes rise { to { opacity: 1; transform: none; } }
-  @media (prefers-reduced-motion: reduce) { .fade { animation: none; opacity: 1; transform: none; } .download:hover { transform: none; } }
+  .reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.9s cubic-bezier(.2, .7, .2, 1), transform 0.9s cubic-bezier(.2, .7, .2, 1); }
+  .reveal.shown { opacity: 1; transform: none; }
 
+  @media (max-width: 760px) {
+    .showcase { grid-template-columns: 1fr; gap: 40px; }
+    .features { grid-template-columns: 1fr 1fr; }
+    .numbers { grid-template-columns: 1fr 1fr; row-gap: 28px; }
+  }
   @media (max-width: 480px) {
-    .features { grid-template-columns: 1fr; gap: 24px; }
-    section { padding: 44px 0; }
+    .features { grid-template-columns: 1fr; }
+    section { padding: 56px 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before { animation: none !important; transition: none !important; }
+    .fade, .reveal { opacity: 1; transform: none; }
   }
 </style>
 </head>
@@ -140,43 +217,136 @@
       <img class="icon fade" src="icon.png" alt="Encore app icon">
       <h1 class="fade d1">Encore</h1>
       <p class="tagline fade d2">Music, beautifully played.</p>
-      <div class="fade d3">
+      <div class="wave fade d3" id="wave" aria-hidden="true"></div>
+      <div class="fade d4">
         <a class="download" href="https://github.com/hrvsuliman/encore-download/releases/latest/download/Encore.ipa">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"/><path d="m7 10 5 5 5-5"/><path d="M5 20h14"/></svg>
           Download for iPhone
         </a>
         <div class="meta" id="version">Newest version · invite only</div>
       </div>
-      <a class="scroll fade d4" href="#install">How to install ↓</a>
+      <a class="scroll fade d5" href="#player">Take a look ↓</a>
     </div>
 
+    <section id="player">
+      <div class="showcase">
+        <div class="phone reveal" aria-hidden="true">
+          <div class="screen">
+            <img class="cover" src="icon.png" alt="">
+            <div class="song"><b>Night Drive</b><span>Neon Coast</span></div>
+            <div class="bar"><i></i></div>
+            <div class="lyrics"><div>
+              <p>City lights are calling</p>
+              <p>Out across the water</p>
+              <p>We were never sleeping</p>
+              <p>Turn it up a little louder</p>
+            </div></div>
+            <div class="controls">
+              <svg width="26" height="26" viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg>
+              <svg width="36" height="36" viewBox="0 0 24 24"><path d="M6 5h4v14H6zm8 0h4v14h-4z"/></svg>
+              <svg width="26" height="26" viewBox="0 0 24 24"><path d="M16 6h2v12h-2zM6 18l8.5-6L6 6z"/></svg>
+            </div>
+          </div>
+        </div>
+        <div>
+          <h2 class="reveal">The player</h2>
+          <p class="lead reveal">Made to feel good every time you press play.</p>
+          <div class="points">
+            <div class="point reveal"><b>Lyrics that follow along</b><span>Line by line in the player, on the Lock Screen and in the Dynamic Island.</span></div>
+            <div class="point reveal"><b>Smooth from start to finish</b><span>Crossfades, fades, vinyl stop and songs that blend on the beat.</span></div>
+            <div class="point reveal"><b>Yours, every song</b><span>Covers, speed, sound and vocals saved the way you like them.</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section>
-      <h2>What's inside</h2>
+      <h2 class="reveal">What's inside</h2>
+      <p class="lead reveal">Everything you'd want. Nothing you don't.</p>
       <div class="features">
-        <div class="feature"><b>Sound Lab</b><span>Speed, bass, 8D, equalizer, vinyl stop.</span></div>
-        <div class="feature"><b>AI vocals</b><span>Instrumental or acapella of any song.</span></div>
-        <div class="feature"><b>Live lyrics</b><span>On the Lock Screen, karaoke and translation.</span></div>
-        <div class="feature"><b>Studio</b><span>Mashups, Auto DJ and remixes.</span></div>
-        <div class="feature"><b>Mood Mixes</b><span>Playlists that build themselves.</span></div>
-        <div class="feature"><b>Widgets</b><span>Lyrics, stats, up next and more.</span></div>
+        <div class="card reveal"><div class="art eq" aria-hidden="true">
+          <i style="--h:60%"></i><i style="--h:90%;animation-delay:.1s"></i><i style="--h:45%;animation-delay:.2s"></i><i style="--h:75%;animation-delay:.3s"></i><i style="--h:100%;animation-delay:.15s"></i><i style="--h:55%;animation-delay:.25s"></i><i style="--h:80%;animation-delay:.05s"></i><i style="--h:40%;animation-delay:.35s"></i>
+        </div><b>Sound Lab</b><span>Speed, bass, 8D, a 10-band equalizer and vinyl stop.</span></div>
+        <div class="card reveal"><div class="art split" aria-hidden="true">
+          <svg viewBox="0 0 200 70" preserveAspectRatio="none"><path class="a" d="M0 30 Q 12 10 25 30 T 50 30 T 75 30 T 100 30 T 125 30 T 150 30 T 175 30 T 200 30"/><path class="b" d="M0 42 Q 12 60 25 42 T 50 42 T 75 42 T 100 42 T 125 42 T 150 42 T 175 42 T 200 42"/></svg>
+        </div><b>AI vocals</b><span>Hear any song as just the instrumental or just the voice.</span></div>
+        <div class="card reveal"><div class="art lines" aria-hidden="true"><i></i><i></i><i></i></div><b>Live lyrics</b><span>Karaoke mode, translation and a lyrics widget.</span></div>
+        <div class="card reveal"><div class="art merge" aria-hidden="true"><span></span><span></span></div><b>Studio</b><span>Mashups, remixes and an Auto DJ that mixes on the beat.</span></div>
+        <div class="card reveal"><div class="art mood" aria-hidden="true"><span></span><span></span><span></span><span></span></div><b>Mood Mixes</b><span>Chill, Focus, Hype and more, made from your own music.</span></div>
+        <div class="card reveal"><div class="art tiles" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span></div><b>Widgets</b><span>Lyrics, stats, up next, cassette and a shuffle orb.</span></div>
+      </div>
+    </section>
+
+    <section>
+      <div class="numbers">
+        <div class="reveal"><b data-count="10">0</b><span>equalizer bands</span></div>
+        <div class="reveal"><b data-count="9">0</b><span>widgets</span></div>
+        <div class="reveal"><b data-count="6">0</b><span>mood mixes</span></div>
+        <div class="reveal"><b data-count="0" data-suffix="">0</b><span>ads, ever</span></div>
       </div>
     </section>
 
     <section id="install">
-      <h2>How to install</h2>
-      <ol>
-        <li><span>Download <b>Encore.ipa</b> on your computer.</span></li>
-        <li><span>Install <a href="https://sideloadly.io" rel="noopener">Sideloadly</a> (free, Windows or Mac).</span></li>
-        <li><span>Plug in your iPhone, drag the file into Sideloadly, sign in with your Apple ID, press <b>Start</b>.</span></li>
-        <li><span>On the iPhone: <b>Settings › General › VPN &amp; Device Management</b>, trust your Apple ID.</span></li>
-        <li><span>Open Encore and enter your invite code.</span></li>
-      </ol>
-      <p class="note">Encore is invite only. With a free Apple ID, reinstall every 7 days. Your music stays, and Encore reminds you.</p>
+      <div class="narrow">
+        <h2 class="reveal">How to install</h2>
+        <p class="lead reveal">Five minutes, once a week.</p>
+        <ol class="reveal">
+          <li><span>Download <b>Encore.ipa</b> on your computer.</span></li>
+          <li><span>Install <a href="https://sideloadly.io" rel="noopener">Sideloadly</a> (free, Windows or Mac).</span></li>
+          <li><span>Plug in your iPhone, drag the file into Sideloadly, sign in with your Apple ID, press <b>Start</b>.</span></li>
+          <li><span>On the iPhone: <b>Settings › General › VPN &amp; Device Management</b>, trust your Apple ID.</span></li>
+          <li><span>Open Encore and enter your invite code.</span></li>
+        </ol>
+        <p class="note reveal">Encore is invite only. With a free Apple ID, reinstall every 7 days. Your music stays, and Encore reminds you.</p>
+      </div>
     </section>
+
+    <div class="cta">
+      <p class="lead reveal">Ready to listen?</p>
+      <a class="download reveal" href="https://github.com/hrvsuliman/encore-download/releases/latest/download/Encore.ipa">Download for iPhone</a>
+    </div>
 
     <footer>Encore</footer>
   </main>
   <script>
+    // The waveform under the title.
+    var wave = document.getElementById("wave");
+    for (var i = 0; i < 28; i++) {
+      var bar = document.createElement("i");
+      var height = 14 + Math.round(Math.abs(Math.sin(i * 0.55)) * 28 + Math.random() * 8);
+      bar.style.setProperty("--h", height + "px");
+      bar.style.animationDelay = (i * 0.06) + "s";
+      bar.style.animationDuration = (0.9 + (i % 5) * 0.12) + "s";
+      wave.appendChild(bar);
+    }
+
+    // Things slide in as you scroll to them; numbers count up.
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add("shown");
+        var number = entry.target.querySelector("[data-count]");
+        if (number) countUp(number);
+        observer.unobserve(entry.target);
+      });
+    }, { threshold: 0.18 });
+    document.querySelectorAll(".reveal").forEach(function (element, index) {
+      element.style.transitionDelay = (index % 3) * 0.08 + "s";
+      observer.observe(element);
+    });
+
+    function countUp(element) {
+      var target = Number(element.getAttribute("data-count"));
+      var start = performance.now();
+      function step(now) {
+        var progress = Math.min((now - start) / 1100, 1);
+        var eased = 1 - Math.pow(1 - progress, 3);
+        element.textContent = Math.round(target * eased);
+        if (progress < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    }
+
     // Newest version and file size, from the latest release.
     fetch("https://api.github.com/repos/hrvsuliman/encore-download/releases/latest")
       .then(function (r) { return r.ok ? r.json() : null; })
